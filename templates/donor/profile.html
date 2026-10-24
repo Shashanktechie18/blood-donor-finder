@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}My Profile — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>My Profile</h1>
+        <p>Manage your donor profile and availability</p>
+    </div>
+    
+    {% if donor %}
+    <div class="profile-card">
+        <div class="profile-banner">
+            <div class="profile-avatar">👤</div>
+        </div>
+        <div class="profile-content">
+            <div class="d-flex align-center justify-between flex-wrap" style="gap: 1rem;">
+                <div>
+                    <h2 class="profile-name">{{ donor.donor_name }}</h2>
+                    <div class="d-flex align-center gap-1 mt-1">
+                        <span class="badge badge-blood">{{ donor.blood_group_name }}</span>
+                        <span class="badge badge-{{ donor.availability_status|lower }}">{{ donor.availability_status }}</span>
+                    </div>
+                </div>
+                <form method="POST" class="d-flex align-center gap-1">
+                    <select name="availability_status" class="form-control" style="width: auto;">
+                        <option value="Available" {{ 'selected' if donor.availability_status == 'Available' }}>Available</option>
+                        <option value="Unavailable" {{ 'selected' if donor.availability_status == 'Unavailable' }}>Unavailable</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
+                </form>
+            </div>
+            
+            <div class="profile-info">
+                <div class="profile-item">
+                    <span class="profile-item-label">Age</span>
+                    <span class="profile-item-value">{{ donor.age }} years</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-item-label">Gender</span>
+                    <span class="profile-item-value">{{ 'Male' if donor.gender == 'M' else ('Female' if donor.gender == 'F' else 'Other') }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-item-label">Phone</span>
+                    <span class="profile-item-value">{{ donor.phone }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-item-label">Blood Group</span>
+                    <span class="profile-item-value">{{ donor.blood_group_name }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-item-label">Address</span>
+                    <span class="profile-item-value">{{ donor.address or 'Not provided' }}</span>
+                </div>
+                <div class="profile-item">
+                    <span class="profile-item-label">Availability</span>
+                    <span class="profile-item-value">{{ donor.availability_status }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-3">
+        <a href="{{ url_for('donor_requests') }}" class="btn btn-secondary">View My Donation Requests →</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

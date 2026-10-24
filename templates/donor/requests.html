@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Donation Requests — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Donation Requests</h1>
+        <p>View and respond to incoming emergency requests matching your blood group</p>
+    </div>
+    
+    {% if requests %}
+    <div class="request-cards">
+        {% for req in requests %}
+        <div class="request-card priority-{{ req.priority_level }}">
+            <div class="request-card-header">
+                <div>
+                    <span class="badge badge-{{ req.priority_level|lower }}">
+                        {% if req.priority_level == 'Critical' %}🔴{% elif req.priority_level == 'High' %}🟠{% elif req.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                        {{ req.priority_level }}
+                    </span>
+                </div>
+                <span class="badge badge-{{ req.response_status|lower }}">{{ req.response_status }}</span>
+            </div>
+            
+            <div class="request-card-body">
+                <div class="request-detail">
+                    <span class="icon">🏥</span>
+                    <strong>{{ req.hospital_name }}</strong>
+                </div>
+                <div class="request-detail">
+                    <span class="icon">🩸</span>
+                    Blood Group: <span class="badge badge-blood" style="margin-left: 0.25rem;">{{ req.blood_group_name }}</span>
+                </div>
+                <div class="request-detail">
+                    <span class="icon">📦</span>
+                    Units Required: <strong>{{ req.units_required }}</strong>
+                </div>
+                <div class="request-detail">
+                    <span class="icon">📍</span>
+                    {{ req.hospital_address or 'Address not available' }}
+                </div>
+                <div class="request-detail">
+                    <span class="icon">📞</span>
+                    {{ req.contact_number }}
+                </div>
+                <div class="request-detail">
+                    <span class="icon">📅</span>
+                    {{ req.request_date.strftime('%d %b %Y, %I:%M %p') if req.request_date else 'N/A' }}
+                </div>
+            </div>
+            
+            {% if req.response_status == 'Pending' %}
+            <div class="request-card-footer">
+                <form method="POST" action="{{ url_for('donor_respond', response_id=req.response_id) }}" style="display: contents;">
+                    <input type="hidden" name="action" value="Accepted">
+                    <button type="submit" class="btn btn-success btn-sm" style="flex: 1;">✓ Accept</button>
+                </form>
+                <form method="POST" action="{{ url_for('donor_respond', response_id=req.response_id) }}" style="display: contents;">
+                    <input type="hidden" name="action" value="Rejected">
+                    <button type="submit" class="btn btn-danger btn-sm" style="flex: 1;">✕ Reject</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📬</div>
+        <h3>No donation requests</h3>
+        <p>You'll be notified when hospitals need donors matching your blood group.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

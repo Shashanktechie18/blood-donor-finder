@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Donation Responses — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Donation Responses</h1>
+        <p>Manage all donor responses to emergency requests</p>
+    </div>
+    
+    {% if responses %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Donor</th>
+                    <th>Phone</th>
+                    <th>Blood Group</th>
+                    <th>Hospital</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resp in responses %}
+                <tr>
+                    <td>#{{ resp.response_id }}</td>
+                    <td style="font-weight: 500; color: var(--text-primary);">{{ resp.donor_name }}</td>
+                    <td>{{ resp.phone }}</td>
+                    <td><span class="badge badge-blood">{{ resp.blood_group_name }}</span></td>
+                    <td>{{ resp.hospital_name }}</td>
+                    <td>
+                        <span class="badge badge-{{ resp.priority_level|lower }}">
+                            {% if resp.priority_level == 'Critical' %}🔴{% elif resp.priority_level == 'High' %}🟠{% elif resp.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                            {{ resp.priority_level }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ resp.response_status|lower }}">{{ resp.response_status }}</span>
+                    </td>
+                    <td class="text-muted">{{ resp.response_date.strftime('%d %b, %I:%M %p') if resp.response_date else 'N/A' }}</td>
+                    <td>
+                        {% if resp.response_status == 'Pending' %}
+                        <form method="POST" action="{{ url_for('admin_update_response') }}" style="display: flex; gap: 0.3rem;">
+                            <input type="hidden" name="response_id" value="{{ resp.response_id }}">
+                            <select name="response_status" class="form-control" style="width: auto; font-size: 0.78rem; padding: 0.3rem 0.5rem;">
+                                <option value="Pending">Pending</option>
+                                <option value="Accepted">Accepted</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                            <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted" style="font-size: 0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📬</div>
+        <h3>No donation responses</h3>
+        <p>Responses from donors will appear here when emergency requests are created.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

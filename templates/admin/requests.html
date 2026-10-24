@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Emergency Requests — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Emergency Requests</h1>
+        <p>View and manage all emergency blood requests</p>
+    </div>
+    
+    {% if requests %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Hospital</th>
+                    <th>Blood Group</th>
+                    <th>Units</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>#{{ req.request_id }}</td>
+                    <td style="font-weight: 500; color: var(--text-primary);">{{ req.hospital_name }}</td>
+                    <td><span class="badge badge-blood">{{ req.blood_group_name }}</span></td>
+                    <td>{{ req.units_required }}</td>
+                    <td>
+                        <span class="badge badge-{{ req.priority_level|lower }}">
+                            {% if req.priority_level == 'Critical' %}🔴{% elif req.priority_level == 'High' %}🟠{% elif req.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                            {{ req.priority_level }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ req.status|lower|replace(' ', '-') }}">{{ req.status }}</span>
+                    </td>
+                    <td class="text-muted">{{ req.request_date.strftime('%d %b %Y, %I:%M %p') if req.request_date else 'N/A' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_update_request_status') }}" style="display: flex; gap: 0.3rem; align-items: center;">
+                            <input type="hidden" name="request_id" value="{{ req.request_id }}">
+                            <select name="status" class="form-control" style="width: auto; font-size: 0.78rem; padding: 0.3rem 0.5rem;">
+                                <option value="Pending" {{ 'selected' if req.status == 'Pending' }}>Pending</option>
+                                <option value="In Progress" {{ 'selected' if req.status == 'In Progress' }}>In Progress</option>
+                                <option value="Fulfilled" {{ 'selected' if req.status == 'Fulfilled' }}>Fulfilled</option>
+                                <option value="Cancelled" {{ 'selected' if req.status == 'Cancelled' }}>Cancelled</option>
+                            </select>
+                            <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No emergency requests</h3>
+        <p>Requests from hospitals will appear here.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

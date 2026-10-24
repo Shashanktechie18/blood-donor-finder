@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Overview of the blood donor management system</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card red">
+            <div class="stat-icon">🩸</div>
+            <div class="stat-value">{{ total_donors }}</div>
+            <div class="stat-label">Total Donors</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">✓</div>
+            <div class="stat-value">{{ available_donors }}</div>
+            <div class="stat-label">Available Donors</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-icon">🏥</div>
+            <div class="stat-value">{{ total_hospitals }}</div>
+            <div class="stat-label">Hospitals</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-value">{{ active_requests }}</div>
+            <div class="stat-label">Active Requests</div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ total_requests }}</div>
+            <div class="stat-label">Total Requests</div>
+        </div>
+        <div class="stat-card cyan">
+            <div class="stat-icon">📬</div>
+            <div class="stat-value">{{ responses_today }}</div>
+            <div class="stat-label">Responses Today</div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Recent Emergency Requests</h2>
+            <a href="{{ url_for('admin_requests') }}" class="btn btn-secondary btn-sm">View All →</a>
+        </div>
+        
+        {% if recent_requests %}
+        <div class="table-container" style="border: none; border-radius: 0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hospital</th>
+                        <th>Blood Group</th>
+                        <th>Units</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in recent_requests %}
+                    <tr>
+                        <td>#{{ req.request_id }}</td>
+                        <td>{{ req.hospital_name }}</td>
+                        <td><span class="badge badge-blood">{{ req.blood_group_name }}</span></td>
+                        <td>{{ req.units_required }}</td>
+                        <td>
+                            <span class="badge badge-{{ req.priority_level|lower }}">
+                                {% if req.priority_level == 'Critical' %}🔴{% elif req.priority_level == 'High' %}🟠{% elif req.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                                {{ req.priority_level }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ req.status|lower|replace(' ', '-') }}">{{ req.status }}</span>
+                        </td>
+                        <td class="text-muted">{{ req.request_date.strftime('%d %b %Y, %I:%M %p') if req.request_date else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No requests yet</h3>
+            <p>Emergency requests from hospitals will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

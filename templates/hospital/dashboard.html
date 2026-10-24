@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Hospital Dashboard — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Hospital Dashboard</h1>
+        <p>Overview of your emergency requests and donor responses</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ total_requests }}</div>
+            <div class="stat-label">Total Requests</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-value">{{ active_requests }}</div>
+            <div class="stat-label">Active Requests</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">✓</div>
+            <div class="stat-value">{{ fulfilled_requests }}</div>
+            <div class="stat-label">Fulfilled</div>
+        </div>
+    </div>
+    
+    <div class="d-flex gap-1 mb-3">
+        <a href="{{ url_for('hospital_new_request') }}" class="btn btn-primary">+ New Emergency Request</a>
+        <a href="{{ url_for('hospital_search_donors') }}" class="btn btn-secondary">Search Donors</a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Recent Requests</h2>
+            <a href="{{ url_for('hospital_track_requests') }}" class="btn btn-secondary btn-sm">View All →</a>
+        </div>
+        
+        {% if recent_requests %}
+        <div class="table-container" style="border: none; border-radius: 0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Blood Group</th>
+                        <th>Units</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in recent_requests %}
+                    <tr>
+                        <td>#{{ req.request_id }}</td>
+                        <td><span class="badge badge-blood">{{ req.blood_group_name }}</span></td>
+                        <td>{{ req.units_required }}</td>
+                        <td>
+                            <span class="badge badge-{{ req.priority_level|lower }}">
+                                {% if req.priority_level == 'Critical' %}🔴{% elif req.priority_level == 'High' %}🟠{% elif req.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                                {{ req.priority_level }}
+                            </span>
+                        </td>
+                        <td><span class="badge badge-{{ req.status|lower|replace(' ', '-') }}">{{ req.status }}</span></td>
+                        <td class="text-muted">{{ req.request_date.strftime('%d %b %Y, %I:%M %p') if req.request_date else 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('hospital_track_request', request_id=req.request_id) }}" class="btn btn-secondary btn-sm">Track</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No requests yet</h3>
+            <p>Create your first emergency blood request.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

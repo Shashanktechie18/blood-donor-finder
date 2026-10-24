@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Manage Donors — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Manage Donors</h1>
+        <p>Add, edit, and manage blood donor records</p>
+    </div>
+    
+    <div class="action-bar">
+        <div>
+            <span class="text-muted" style="font-size: 0.85rem;">{{ donors|length }} donors registered</span>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-donor-modal')">+ Add Donor</button>
+    </div>
+    
+    {% if donors %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Blood Group</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donor in donors %}
+                <tr>
+                    <td>#{{ donor.donor_id }}</td>
+                    <td style="font-weight: 500; color: var(--text-primary);">{{ donor.donor_name }}</td>
+                    <td>{{ donor.age }}</td>
+                    <td>{{ donor.gender }}</td>
+                    <td>{{ donor.phone }}</td>
+                    <td><span class="badge badge-blood">{{ donor.blood_group_name }}</span></td>
+                    <td>
+                        <span class="badge badge-{{ donor.availability_status|lower }}">{{ donor.availability_status }}</span>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                    data-id="{{ donor.donor_id }}"
+                                    data-name="{{ donor.donor_name }}"
+                                    data-age="{{ donor.age }}"
+                                    data-gender="{{ donor.gender }}"
+                                    data-phone="{{ donor.phone }}"
+                                    data-address="{{ donor.address or '' }}"
+                                    data-bg="{{ donor.blood_group_id }}"
+                                    data-status="{{ donor.availability_status }}"
+                                    onclick="editDonor(this)">Edit</button>
+                            <form id="delete-donor-{{ donor.donor_id }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="donor_id" value="{{ donor.donor_id }}">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete('delete-donor-{{ donor.donor_id }}')">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">👤</div>
+        <h3>No donors registered</h3>
+        <p>Click "Add Donor" to register a new blood donor.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Donor Modal -->
+<div class="modal-overlay" id="add-donor-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Add New Donor</h3>
+            <button class="modal-close" onclick="closeModal('add-donor-modal')">×</button>
+        </div>
+        <form method="POST">
+            <input type="hidden" name="action" value="add">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="donor_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Age</label>
+                    <input type="number" name="age" class="form-control" min="18" max="65" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Gender</label>
+                    <select name="gender" class="form-control" required>
+                        <option value="">Select</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea name="address" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Blood Group</label>
+                <select name="blood_group_id" class="form-control" required>
+                    <option value="">Select Blood Group</option>
+                    {% for bg in blood_groups %}
+                    <option value="{{ bg.blood_group_id }}">{{ bg.blood_group_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('add-donor-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Donor</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Donor Modal -->
+<div class="modal-overlay" id="edit-donor-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Edit Donor</h3>
+            <button class="modal-close" onclick="closeModal('edit-donor-modal')">×</button>
+        </div>
+        <form method="POST">
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="donor_id" id="edit-donor-id">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="donor_name" id="edit-donor-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Age</label>
+                    <input type="number" name="age" id="edit-donor-age" class="form-control" min="18" max="65" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Gender</label>
+                    <select name="gender" id="edit-donor-gender" class="form-control" required>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" id="edit-donor-phone" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea name="address" id="edit-donor-address" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Blood Group</label>
+                    <select name="blood_group_id" id="edit-donor-bg" class="form-control" required>
+                        {% for bg in blood_groups %}
+                        <option value="{{ bg.blood_group_id }}">{{ bg.blood_group_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Availability</label>
+                    <select name="availability_status" id="edit-donor-status" class="form-control">
+                        <option value="Available">Available</option>
+                        <option value="Unavailable">Unavailable</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('edit-donor-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Donor</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Reports — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Reports</h1>
+        <p>Statistical and historical reports for blood management</p>
+    </div>
+    
+    <div class="report-tabs">
+        <button class="report-tab active" data-tab="distribution" onclick="switchReportTab('distribution')">Blood Group Distribution</button>
+        <button class="report-tab" data-tab="available" onclick="switchReportTab('available')">Available Donors</button>
+        <button class="report-tab" data-tab="history" onclick="switchReportTab('history')">Request History</button>
+        <button class="report-tab" data-tab="active" onclick="switchReportTab('active')">Active Requests</button>
+    </div>
+    
+    <!-- Blood Group Distribution -->
+    <div class="report-section active" id="report-distribution">
+        <div class="chart-container">
+            <h3 class="chart-title">Donor Count by Blood Group</h3>
+            <div class="bar-chart" id="bg-chart"></div>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Blood Group</th>
+                        <th>Donor Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in bg_stats %}
+                    <tr>
+                        <td><span class="badge badge-blood">{{ stat.blood_group_name }}</span></td>
+                        <td style="font-weight: 600; color: var(--text-primary);">{{ stat.donor_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Available Donors -->
+    <div class="report-section" id="report-available">
+        {% if available_donors %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Blood Group</th>
+                        <th>Address</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in available_donors %}
+                    <tr>
+                        <td style="font-weight: 500; color: var(--text-primary);">{{ d.donor_name }}</td>
+                        <td>{{ d.phone }}</td>
+                        <td>{{ d.age }}</td>
+                        <td>{{ d.gender }}</td>
+                        <td><span class="badge badge-blood">{{ d.blood_group_name }}</span></td>
+                        <td>{{ d.address or '—' }}</td>
+                        <td><span class="badge badge-available">Available</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">👤</div>
+            <h3>No available donors</h3>
+            <p>All donors are currently unavailable.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Request History -->
+    <div class="report-section" id="report-history">
+        {% if request_history %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hospital</th>
+                        <th>Blood Group</th>
+                        <th>Units</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in request_history %}
+                    <tr>
+                        <td>#{{ req.request_id }}</td>
+                        <td style="font-weight: 500; color: var(--text-primary);">{{ req.hospital_name }}</td>
+                        <td><span class="badge badge-blood">{{ req.blood_group_name }}</span></td>
+                        <td>{{ req.units_required }}</td>
+                        <td>
+                            <span class="badge badge-{{ req.priority_level|lower }}">
+                                {% if req.priority_level == 'Critical' %}🔴{% elif req.priority_level == 'High' %}🟠{% elif req.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                                {{ req.priority_level }}
+                            </span>
+                        </td>
+                        <td><span class="badge badge-{{ req.status|lower|replace(' ', '-') }}">{{ req.status }}</span></td>
+                        <td class="text-muted">{{ req.request_date.strftime('%d %b %Y, %I:%M %p') if req.request_date else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No request history</h3>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Active Requests -->
+    <div class="report-section" id="report-active">
+        {% if active_requests %}
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hospital</th>
+                        <th>Blood Group</th>
+                        <th>Units</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in active_requests %}
+                    <tr>
+                        <td>#{{ req.request_id }}</td>
+                        <td style="font-weight: 500; color: var(--text-primary);">{{ req.hospital_name }}</td>
+                        <td><span class="badge badge-blood">{{ req.blood_group_name }}</span></td>
+                        <td>{{ req.units_required }}</td>
+                        <td>
+                            <span class="badge badge-{{ req.priority_level|lower }}">
+                                {% if req.priority_level == 'Critical' %}🔴{% elif req.priority_level == 'High' %}🟠{% elif req.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                                {{ req.priority_level }}
+                            </span>
+                        </td>
+                        <td><span class="badge badge-{{ req.status|lower|replace(' ', '-') }}">{{ req.status }}</span></td>
+                        <td class="text-muted">{{ req.request_date.strftime('%d %b %Y, %I:%M %p') if req.request_date else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">✅</div>
+            <h3>No active requests</h3>
+            <p>All requests have been fulfilled or cancelled.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Render blood group distribution chart
+    const bgData = [
+        {% for stat in bg_stats %}
+        { label: '{{ stat.blood_group_name }}', value: {{ stat.donor_count }} },
+        {% endfor %}
+    ];
+    renderBarChart('bg-chart', bgData);
+</script>
+{% endblock %}

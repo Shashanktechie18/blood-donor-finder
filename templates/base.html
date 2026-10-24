@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Blood Donor Finder with Emergency Priority System - Find blood donors quickly during emergencies">
+    <title>{% block title %}Blood Donor Finder{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if session.get('user_id') %}
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <div class="logo-icon">🩸</div>
+            BloodLink
+        </a>
+        
+        <ul class="navbar-links">
+            {% if session.role == 'admin' %}
+                <li><a href="{{ url_for('admin_dashboard') }}" class="{{ 'active' if request.endpoint == 'admin_dashboard' }}">Dashboard</a></li>
+                <li><a href="{{ url_for('admin_donors') }}" class="{{ 'active' if request.endpoint == 'admin_donors' }}">Donors</a></li>
+                <li><a href="{{ url_for('admin_hospitals') }}" class="{{ 'active' if request.endpoint == 'admin_hospitals' }}">Hospitals</a></li>
+                <li><a href="{{ url_for('admin_requests') }}" class="{{ 'active' if request.endpoint == 'admin_requests' }}">Requests</a></li>
+                <li><a href="{{ url_for('admin_responses') }}" class="{{ 'active' if request.endpoint == 'admin_responses' }}">Responses</a></li>
+                <li><a href="{{ url_for('admin_reports') }}" class="{{ 'active' if request.endpoint == 'admin_reports' }}">Reports</a></li>
+            {% elif session.role == 'donor' %}
+                <li><a href="{{ url_for('donor_profile') }}" class="{{ 'active' if request.endpoint == 'donor_profile' }}">Profile</a></li>
+                <li><a href="{{ url_for('donor_requests') }}" class="{{ 'active' if request.endpoint == 'donor_requests' }}">My Requests</a></li>
+            {% elif session.role == 'hospital' %}
+                <li><a href="{{ url_for('hospital_dashboard') }}" class="{{ 'active' if request.endpoint == 'hospital_dashboard' }}">Dashboard</a></li>
+                <li><a href="{{ url_for('hospital_new_request') }}" class="{{ 'active' if request.endpoint == 'hospital_new_request' }}">New Request</a></li>
+                <li><a href="{{ url_for('hospital_track_requests') }}" class="{{ 'active' if request.endpoint == 'hospital_track_requests' }}">Track Requests</a></li>
+                <li><a href="{{ url_for('hospital_search_donors') }}" class="{{ 'active' if request.endpoint == 'hospital_search_donors' }}">Search Donors</a></li>
+            {% endif %}
+        </ul>
+        
+        <div class="nav-user">
+            <span class="nav-role-badge">{{ session.role }}</span>
+            <span class="nav-user-name">{{ session.user_name }}</span>
+            <a href="{{ url_for('change_password') }}" class="btn-logout" style="margin-right: 5px;">Change Password</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="flash-message {{ category }}">
+                {% if category == 'success' %}✓{% elif category == 'error' %}✕{% else %}ℹ{% endif %}
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

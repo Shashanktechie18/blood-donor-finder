@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Track Requests — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Track Requests</h1>
+        <p>Monitor the lifecycle of your emergency blood requests</p>
+    </div>
+    
+    {% if requests %}
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Blood Group</th>
+                    <th>Units</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>#{{ req.request_id }}</td>
+                    <td><span class="badge badge-blood">{{ req.blood_group_name }}</span></td>
+                    <td>{{ req.units_required }}</td>
+                    <td>
+                        <span class="badge badge-{{ req.priority_level|lower }}">
+                            {% if req.priority_level == 'Critical' %}🔴{% elif req.priority_level == 'High' %}🟠{% elif req.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                            {{ req.priority_level }}
+                        </span>
+                    </td>
+                    <td><span class="badge badge-{{ req.status|lower|replace(' ', '-') }}">{{ req.status }}</span></td>
+                    <td class="text-muted">{{ req.request_date.strftime('%d %b %Y, %I:%M %p') if req.request_date else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('hospital_track_request', request_id=req.request_id) }}" class="btn btn-secondary btn-sm">View Details</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No requests</h3>
+        <p>You haven't raised any emergency requests yet.</p>
+        <a href="{{ url_for('hospital_new_request') }}" class="btn btn-primary mt-2">+ New Request</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Search Donors — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <h1>Search Available Donors</h1>
+        <p>Find available donors by blood group using our stored procedure</p>
+    </div>
+    
+    <div class="card mb-3">
+        <form method="GET" class="form-inline">
+            <div class="form-group">
+                <label class="form-label">Blood Group</label>
+                <select name="blood_group" class="form-control" required>
+                    <option value="">Select blood group</option>
+                    {% for bg in blood_groups %}
+                    <option value="{{ bg.blood_group_name }}" {{ 'selected' if selected_bg == bg.blood_group_name }}>{{ bg.blood_group_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Search Donors</button>
+        </form>
+    </div>
+    
+    {% if selected_bg %}
+        {% if donors %}
+        <div class="action-bar">
+            <span class="text-muted" style="font-size: 0.85rem;">
+                Found {{ donors|length }} available donor{{ 's' if donors|length != 1 }} for blood group 
+                <span class="badge badge-blood">{{ selected_bg }}</span>
+            </span>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Blood Group</th>
+                        <th>Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in donors %}
+                    <tr>
+                        <td>#{{ d.donor_id }}</td>
+                        <td style="font-weight: 500; color: var(--text-primary);">{{ d.donor_name }}</td>
+                        <td>{{ d.phone }}</td>
+                        <td>{{ d.age }}</td>
+                        <td>{{ d.gender }}</td>
+                        <td><span class="badge badge-blood">{{ d.blood_group_name }}</span></td>
+                        <td>{{ d.address or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">😔</div>
+            <h3>No available donors found</h3>
+            <p>No donors with blood group <span class="badge badge-blood">{{ selected_bg }}</span> are currently available.</p>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

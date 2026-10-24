@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Request #{{ req.request_id }} — BloodLink{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="page-header">
+        <div class="d-flex align-center gap-1">
+            <a href="{{ url_for('hospital_track_requests') }}" class="btn btn-secondary btn-sm">← Back</a>
+            <h1>Request #{{ req.request_id }}</h1>
+        </div>
+        <p>Detailed view of your emergency request and donor responses</p>
+    </div>
+    
+    <div class="card mb-3">
+        <div class="card-header">
+            <h2 class="card-title">Request Details</h2>
+            <span class="badge badge-{{ req.status|lower|replace(' ', '-') }}">{{ req.status }}</span>
+        </div>
+        <div class="profile-info">
+            <div class="profile-item">
+                <span class="profile-item-label">Blood Group</span>
+                <span class="profile-item-value"><span class="badge badge-blood">{{ req.blood_group_name }}</span></span>
+            </div>
+            <div class="profile-item">
+                <span class="profile-item-label">Units Required</span>
+                <span class="profile-item-value">{{ req.units_required }}</span>
+            </div>
+            <div class="profile-item">
+                <span class="profile-item-label">Priority</span>
+                <span class="profile-item-value">
+                    <span class="badge badge-{{ req.priority_level|lower }}">
+                        {% if req.priority_level == 'Critical' %}🔴{% elif req.priority_level == 'High' %}🟠{% elif req.priority_level == 'Medium' %}🟡{% else %}🟢{% endif %}
+                        {{ req.priority_level }}
+                    </span>
+                </span>
+            </div>
+            <div class="profile-item">
+                <span class="profile-item-label">Request Date</span>
+                <span class="profile-item-value">{{ req.request_date.strftime('%d %b %Y, %I:%M %p') if req.request_date else 'N/A' }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Donor Responses ({{ responses|length }})</h2>
+        </div>
+        
+        {% if responses %}
+        <div class="table-container" style="border: none; border-radius: 0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Donor Name</th>
+                        <th>Phone</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Status</th>
+                        <th>Response Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resp in responses %}
+                    <tr>
+                        <td style="font-weight: 500; color: var(--text-primary);">{{ resp.donor_name }}</td>
+                        <td>{{ resp.phone }}</td>
+                        <td>{{ resp.age }}</td>
+                        <td>{{ resp.gender }}</td>
+                        <td>
+                            <span class="badge badge-{{ resp.response_status|lower }}">{{ resp.response_status }}</span>
+                        </td>
+                        <td class="text-muted">{{ resp.response_date.strftime('%d %b, %I:%M %p') if resp.response_date else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📬</div>
+            <h3>No responses yet</h3>
+            <p>Waiting for matching donors to respond.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
